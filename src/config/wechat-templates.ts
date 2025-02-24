@@ -11,6 +11,82 @@ export interface Template {
 
 export const templates: Template[] = [
   {
+    id: 'xiaogang',
+    name: '小刚',
+    description: '基于科技主题的现代风格样式',
+    styles: 'prose-xiaogang',
+    options: {
+      base: {
+        themeColor: '#4299e1',
+        textAlign: 'left',
+        lineHeight: '1.8',
+        fontSize: '15px'
+      },
+      block: {
+        image: {
+          display: 'block',
+          width: '100%',
+          maxWidth: '100%',
+          margin: '1.5em auto',
+          borderRadius: '8px'
+        },
+        h1: {
+          fontSize: '26px',
+          background: 'linear-gradient(45deg, #4299e1, #667eea)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          margin: '32px 0 16px',
+          fontWeight: 'bold'
+        },
+        h2: {
+          fontSize: '22px',
+          background: 'linear-gradient(45deg, #4299e1, #667eea)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          margin: '24px 0 12px',
+          fontWeight: 'bold'
+        },
+        h3: {
+          fontSize: '18px',
+          background: 'linear-gradient(45deg, #4299e1, #667eea)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          margin: '20px 0 10px',
+          fontWeight: 'bold'
+        },
+        p: {
+          fontSize: '15px',
+          color: '#4a5568',
+          margin: '20px 0',
+          lineHeight: 1.75,
+        },
+        blockquote: {
+          fontSize: '15px',
+          color: '#718096',
+          borderLeft: '4px solid #4299e1',
+          padding:"1em",
+          margin: '24px 0',
+          background: 'rgba(66, 153, 225, 0.1)'
+        }
+      },
+      inline: {
+        strong: {
+          color: '#4299e1',
+          fontWeight: 'bold'
+        },
+        em: {
+          color: '#4a5568',
+          fontStyle: 'italic'
+        },
+        link: {
+          color: '#4299e1',
+          textDecoration: 'underline'
+        }
+      }
+    },
+    transform: (html: string) => html
+  },
+  {
     id: 'default',
     name: '默认样式',
     description: '清晰简约的默认样式',
@@ -295,6 +371,13 @@ export const templates: Template[] = [
         fontSize: '15px'
       },
       block: {
+        image: {
+          display: 'block',
+          width: '100%',
+          maxWidth: '100%',
+          margin: '1.5em auto',
+          borderRadius: '8px'
+        },
         h1: {
           fontSize: '26px',
           background: 'linear-gradient(45deg, #4299e1, #667eea)',
@@ -470,4 +553,4 @@ export const templates: Template[] = [
       </section>`;
     }
   }
-]; 
+];

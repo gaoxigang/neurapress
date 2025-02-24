@@ -268,10 +268,7 @@ export class MarkdownRenderer {
     this.renderer.image = ({ href, title, text }: Tokens.Image) => {
       const imageStyle = (this.options.block?.image || {})
       const style = {
-        ...imageStyle,
-        maxWidth: '100%',
-        display: 'block',
-        margin: '0.5em auto'
+        ...imageStyle
       }
       const styleStr = cssPropertiesToString(style)
       return `<img src="${href}"${title ? ` title="${title}"` : ''} alt="${text}"${styleStr ? ` style="${styleStr}"` : ''}>`

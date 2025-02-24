@@ -288,6 +288,25 @@ export default function WechatEditor() {
         onPreviewToggle={() => setShowPreview(!showPreview)}
         onCodeThemeChange={setCodeTheme}
         onClear={handleClear}
+        onImageUploaded={(imageUrl) => {
+          const textarea = textareaRef.current
+          if (!textarea) return
+
+          const start = textarea.selectionStart
+          const end = textarea.selectionEnd
+          const newText = value.substring(0, start) + 
+                         `![图片](${imageUrl})` + 
+                         value.substring(end)
+          
+          setValue(newText)
+          handleEditorChange(newText)
+
+          requestAnimationFrame(() => {
+            textarea.focus()
+            const newCursorPos = start + imageUrl.length + 11
+            textarea.setSelectionRange(newCursorPos, newCursorPos)
+          })
+        }}
       />
 
       {/* 编辑器主体 */}

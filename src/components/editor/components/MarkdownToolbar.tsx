@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
+import { ImageUploader } from './ImageUploader'
 import {
   Bold,
   Italic,
@@ -33,7 +34,7 @@ type ToolButton = {
   suffix?: string
 }
 
-type Tool = ToolButton | { type: 'separator' }
+type Tool = ToolButton | { type: 'separator' } | { type: 'component'; component: React.ReactNode }
 
 export function MarkdownToolbar({ onInsert }: MarkdownToolbarProps) {
   const tools: Tool[] = [
@@ -115,12 +116,15 @@ export function MarkdownToolbar({ onInsert }: MarkdownToolbarProps) {
     },
     {
       icon: <Image className="h-4 w-4" />,
-      title: '图片',
-      text: '![',
-      wrap: true,
-      suffix: '](url)',
-      placeholder: '图片描述'
+      title: '插入图片',
+      text: '![图片描述](图片链接)',
+      placeholder: ''
     },
+    { type: 'component', component: (
+      <ImageUploader onImageUploaded={(imageUrl) => {
+        onInsert(`![图片描述](${imageUrl})`)
+      }} />
+    )},
     { type: 'separator' },
     {
       icon: <Table className="h-4 w-4" />,
@@ -140,8 +144,13 @@ export function MarkdownToolbar({ onInsert }: MarkdownToolbarProps) {
     <TooltipProvider>
       <div className="flex items-center gap-0.5 px-2 py-1 border-b">
         {tools.map((tool, index) => {
-          if ('type' in tool && tool.type === 'separator') {
-            return <Separator key={index} orientation="vertical" className="mx-0.5 h-4" />
+          if ('type' in tool) {
+            if (tool.type === 'separator') {
+              return <Separator key={index} orientation="vertical" className="mx-0.5 h-4" />
+            }
+            if (tool.type === 'component') {
+              return <React.Fragment key={index}>{tool.component}</React.Fragment>
+            }
           }
 
           const buttonTool = tool as ToolButton
@@ -179,4 +188,4 @@ export function MarkdownToolbar({ onInsert }: MarkdownToolbarProps) {
       </div>
     </TooltipProvider>
   )
-} 
+}

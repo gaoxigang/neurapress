@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Plus, Save, Smartphone, Settings, Github, Trash2 } from 'lucide-react'
+import { Copy, Plus, Save, Smartphone, Settings, Github, Trash2, Upload } from 'lucide-react'
+import { ImageUploader } from './ImageUploader'
 import { cn } from '@/lib/utils'
 import { WechatStylePicker } from '../../template/WechatStylePicker'
 import { TemplateManager } from '../../template/TemplateManager'
@@ -39,6 +40,7 @@ interface EditorToolbarProps {
   onPreviewToggle: () => void
   onCodeThemeChange: (theme: CodeThemeId) => void
   onClear: () => void
+  onImageUploaded?: (imageUrl: string) => void
 }
 
 export function EditorToolbar({
@@ -154,6 +156,7 @@ export function EditorToolbar({
               <div className="hidden sm:block">
                 <TemplateManager onTemplateChange={onTemplateChange} />
               </div>
+
               <button
                 onClick={onPreviewToggle}
                 className={cn(
@@ -221,4 +224,4 @@ export function EditorToolbar({
       </div>
     </div>
   )
-} 
+}
