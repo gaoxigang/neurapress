@@ -11,7 +11,7 @@ import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NeuraPress',
+  title: 'MarkDown 助手',
   description: 'Markdown 转微信公众号内容神器',
   icons: {
     icon: [

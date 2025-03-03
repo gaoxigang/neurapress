@@ -33,7 +33,7 @@ export default function WechatEditor() {
   
   // 状态管理
   const [value, setValue] = useState('')
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('default')
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('xiaogang')
   const [showPreview, setShowPreview] = useState(true)
   const [styleOptions, setStyleOptions] = useState<RendererOptions>({})
   const [previewSize, setPreviewSize] = useState<PreviewSize>('medium')

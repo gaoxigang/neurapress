@@ -23,7 +23,7 @@ export function MainNav() {
             <div className="flex-shrink-0">
               <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
                 <Logo className="w-8 h-8" />
-                <span>NeuraPress</span>
+                <span>MarkDown 助手</span>
               </Link>
             </div>
             <div className="hidden md:block">
@@ -47,7 +47,7 @@ export function MainNav() {
           </div>
           <div className="flex items-center space-x-4">
             <p className="text-sm text-muted-foreground hidden md:block">
-              专业的内容转换工具
+              专业的 Markdown 编辑工具
             </p>
             <ThemeToggle />
             <Button

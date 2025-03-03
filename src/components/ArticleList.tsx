@@ -81,7 +81,7 @@ export function ArticleList({ onSelect, currentContent, onNew }: ArticleListProp
       id: Date.now().toString(),
       title,
       content: currentContent,
-      template: 'default', // 默认模板
+      template: 'xiaogang', // 默认模板
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
@@ -146,7 +146,7 @@ export function ArticleList({ onSelect, currentContent, onNew }: ArticleListProp
 > 作者：[你的名字]
 > 日期：${new Date().toLocaleDateString()}
 `,
-      template: 'default',
+      template: 'xiaogang',
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
