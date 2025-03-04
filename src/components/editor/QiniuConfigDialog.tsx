@@ -28,6 +28,7 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
     bucket: '',
     domain: ''
   })
+  const [isSaving, setIsSaving] = useState(false)
 
   // 从本地存储加载配置
   useEffect(() => {
@@ -41,26 +42,53 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
     }
   }, [])
 
-  const handleSave = () => {
-    // 验证所有字段都已填写
-    if (!config.accessKey || !config.secretKey || !config.bucket || !config.domain) {
+  const validateConfig = (config: QiniuConfig): string | null => {
+    if (!config.accessKey) return '请输入AccessKey'
+    if (!config.secretKey) return '请输入SecretKey'
+    if (!config.bucket) return '请输入Bucket名称'
+    if (!config.domain) return '请输入域名'
+    
+    // 验证域名格式
+    try {
+      new URL(config.domain)
+    } catch {
+      return '请输入有效的域名（例如：https://example.com）'
+    }
+
+    return null
+  }
+
+  const handleSave = async () => {
+    const error = validateConfig(config)
+    if (error) {
       toast({
         title: '配置错误',
-        description: '请填写所有必填字段',
+        description: error,
         variant: 'destructive'
       })
       return
     }
 
-    // 保存到本地存储
-    localStorage.setItem('qiniu_config', JSON.stringify(config))
-    onSave(config)
-    onOpenChange(false)
+    setIsSaving(true)
+    try {
+      // 保存到本地存储
+      localStorage.setItem('qiniu_config', JSON.stringify(config))
+      onSave(config)
+      onOpenChange(false)
 
-    toast({
-      title: '保存成功',
-      description: '七牛云配置已更新'
-    })
+      toast({
+        title: '保存成功',
+        description: '七牛云配置已更新'
+      })
+    } catch (error) {
+      toast({
+        title: '保存失败',
+        description: '配置保存失败，请重试',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -79,6 +107,7 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
               value={config.accessKey}
               onChange={(e) => setConfig({ ...config, accessKey: e.target.value })}
               className="col-span-3"
+              placeholder="请输入AccessKey"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -91,6 +120,7 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
               value={config.secretKey}
               onChange={(e) => setConfig({ ...config, secretKey: e.target.value })}
               className="col-span-3"
+              placeholder="请输入SecretKey"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -102,6 +132,7 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
               value={config.bucket}
               onChange={(e) => setConfig({ ...config, bucket: e.target.value })}
               className="col-span-3"
+              placeholder="请输入Bucket名称"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -118,7 +149,9 @@ export function QiniuConfigDialog({ open, onOpenChange, onSave }: QiniuConfigDia
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSave}>保存配置</Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? '保存中...' : '保存配置'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
