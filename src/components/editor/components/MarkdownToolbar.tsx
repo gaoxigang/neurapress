@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 import { ImageUploader } from './ImageUploader'
+import { ColorPicker } from './ColorPicker'
 import {
   Bold,
   Italic,
@@ -137,7 +138,24 @@ export function MarkdownToolbar({ onInsert }: MarkdownToolbarProps) {
       title: '分割线',
       text: '\n---\n',
       placeholder: ''
-    }
+    },
+    { type: 'separator' },
+    { type: 'component', component: (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <ColorPicker onColorSelect={(color) => {
+            onInsert(`{color:${color}}`, {
+              wrap: true,
+              suffix: '{/color}',
+              placeholder: '彩色文本'
+            })
+          }} />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p>文字颜色</p>
+        </TooltipContent>
+      </Tooltip>
+    )}
   ]
 
   return (

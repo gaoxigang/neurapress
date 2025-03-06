@@ -1,10 +1,15 @@
-import mermaid from 'mermaid'
+'use client'
 
+// 使用动态导入
+import dynamic from 'next/dynamic'
+
+// 声明全局类型
 declare global {
   interface Window {
     mermaid: {
       init: (config: any, nodes: NodeListOf<Element>) => Promise<void>
       initialize: (config: any) => void
+      render: (id: string, text: string) => Promise<{ svg: string }>
     }
   }
 }
@@ -43,13 +48,31 @@ export const MERMAID_CONFIG = {
   securityLevel: 'loose' as const
 }
 
+// 标记是否已初始化
+let isMermaidInitialized = false
+
 /**
  * 初始化 Mermaid
  */
 export const initializeMermaid = async () => {
+  // 如果不在浏览器环境，则直接返回
+  if (typeof window === 'undefined') return
+  
+  // 如果已初始化，则直接返回
+  if (isMermaidInitialized) return
+
   try {
+    // 动态导入 mermaid
+    const mermaid = (await import('mermaid')).default
+    
+    // 标记为已初始化
+    isMermaidInitialized = true
+
     // 初始化配置
-    mermaid.initialize(MERMAID_CONFIG)
+    mermaid.init({
+      ...MERMAID_CONFIG,
+      startOnLoad: false // 确保不会自动加载
+    })
 
     // 获取所有 mermaid 图表
     const elements = document.querySelectorAll('.mermaid')

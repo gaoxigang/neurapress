@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Copy } from 'lucide-react'
 import { MobileEditor } from './components/MobileEditor'
 import { DesktopEditor } from './components/DesktopEditor'
+import dynamic from 'next/dynamic'
 
 export default function WechatEditor() {
   const { toast } = useToast()
@@ -265,6 +266,206 @@ export default function WechatEditor() {
 
   const { wordCount, readingTime } = useWordStats(value)
 
+  const handleSaveAsImage = useCallback(async () => {
+    if (!previewRef.current) return false
+
+    try {
+      // 动态导入 html2canvas
+      const html2canvasModule = await import('html2canvas')
+      const html2canvas = html2canvasModule.default
+
+      // 获取预览内容元素
+      const previewContent = previewRef.current.querySelector('.preview-content') as HTMLElement
+      if (!previewContent) {
+        throw new Error('找不到预览内容元素')
+      }
+      
+      // 创建一个临时容器，用于放置内容的副本
+      const tempContainer = document.createElement('div')
+      tempContainer.style.position = 'absolute'
+      tempContainer.style.left = '-9999px'
+      tempContainer.style.top = '0'
+      tempContainer.style.width = `${previewContent.offsetWidth}px`
+      tempContainer.style.background = '#ffffff'
+      document.body.appendChild(tempContainer)
+      
+      // 复制内容的HTML
+      tempContainer.innerHTML = previewContent.innerHTML
+      
+      // 处理所有元素，修复可能导致问题的样式
+      const processElements = (elements: NodeListOf<Element>) => {
+        elements.forEach(el => {
+          if (el instanceof HTMLElement) {
+            // 获取计算样式
+            const style = window.getComputedStyle(el)
+            
+            // 处理渐变背景 - 不移除，而是尝试修复
+            const background = style.background || style.backgroundImage
+            
+            if (background && background.includes('gradient')) {
+              // 尝试提取渐变颜色，创建一个简化但有效的渐变
+              try {
+                // 提取渐变类型（线性或径向）
+                const isLinear = background.includes('linear-gradient')
+                const isRadial = background.includes('radial-gradient')
+                
+                if (isLinear) {
+                  // 提取方向（如果有）
+                  let direction = 'to bottom' // 默认方向
+                  if (background.includes('to ')) {
+                    const dirMatch = background.match(/to\s+([^,]+)/)
+                    if (dirMatch && dirMatch[1]) {
+                      direction = dirMatch[1].trim()
+                    }
+                  }
+                  
+                  // 提取颜色
+                  const colorMatches = background.match(/#[a-fA-F0-9]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)/g)
+                  if (colorMatches && colorMatches.length >= 2) {
+                    // 使用提取的颜色创建一个新的简化渐变
+                    const startColor = colorMatches[0]
+                    const endColor = colorMatches[colorMatches.length - 1]
+                    el.style.background = `linear-gradient(${direction}, ${startColor}, ${endColor})`
+                  } else {
+                    // 如果无法提取颜色，使用安全的替代颜色
+                    el.style.background = '#f8f9fa'
+                  }
+                } else if (isRadial) {
+                  // 对于径向渐变，使用一个简化的版本
+                  const colorMatches = background.match(/#[a-fA-F0-9]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)/g)
+                  if (colorMatches && colorMatches.length >= 2) {
+                    const startColor = colorMatches[0]
+                    const endColor = colorMatches[colorMatches.length - 1]
+                    el.style.background = `radial-gradient(circle, ${startColor}, ${endColor})`
+                  } else {
+                    el.style.background = '#f8f9fa'
+                  }
+                }
+              } catch (e) {
+                // 如果处理渐变失败，使用安全的替代颜色
+                console.warn('处理渐变背景失败:', e)
+                el.style.background = '#f8f9fa'
+              }
+            }
+            
+            // 确保内容可见
+            el.style.maxHeight = 'none'
+            el.style.overflow = 'visible'
+            
+            // 移除可能导致问题的其他样式
+            el.style.boxShadow = 'none'
+            el.style.textShadow = 'none'
+            
+            // 移除所有变换
+            el.style.transform = 'none'
+            el.style.transition = 'none'
+            el.style.animation = 'none'
+            
+            // 确保所有内容都是静态的
+            el.style.position = el.style.position === 'fixed' ? 'absolute' : el.style.position
+          }
+        })
+      }
+      
+      // 处理临时容器中的所有元素
+      processElements(tempContainer.querySelectorAll('*'))
+      
+      // 等待DOM更新
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // 尝试使用 html2canvas 生成图片
+      try {
+        const canvas = await html2canvas(tempContainer, {
+          scale: 2, // 提高清晰度
+          useCORS: true, // 允许跨域图片
+          logging: false,
+          backgroundColor: '#ffffff',
+          allowTaint: true,
+          removeContainer: true,
+          ignoreElements: (element) => {
+            return element.classList.contains('ignore-screenshot')
+          }
+        })
+        
+        // 移除临时容器
+        if (document.body.contains(tempContainer)) {
+          document.body.removeChild(tempContainer)
+        }
+        
+        // 转换为图片并下载
+        const dataUrl = canvas.toDataURL('image/png')
+        const link = document.createElement('a')
+        link.href = dataUrl
+        link.download = `wechat-article-${new Date().toISOString().slice(0, 10)}.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        return true
+      } catch (html2canvasError) {
+        console.error('html2canvas 失败，尝试使用 dom-to-image:', html2canvasError)
+        
+        // 如果 html2canvas 失败，尝试使用 dom-to-image
+        if (document.body.contains(tempContainer)) {
+          document.body.removeChild(tempContainer)
+        }
+        
+        // 创建一个新的临时容器
+        const newTempContainer = document.createElement('div')
+        newTempContainer.style.position = 'absolute'
+        newTempContainer.style.left = '-9999px'
+        newTempContainer.style.top = '0'
+        newTempContainer.style.width = `${previewContent.offsetWidth}px`
+        newTempContainer.style.background = '#ffffff'
+        newTempContainer.innerHTML = previewContent.innerHTML
+        document.body.appendChild(newTempContainer)
+        
+        // 处理所有元素
+        processElements(newTempContainer.querySelectorAll('*'))
+        
+        // 等待DOM更新
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        // 使用 dom-to-image 生成图片
+        const domtoimage = await import('dom-to-image')
+        const dataUrl = await domtoimage.toPng(newTempContainer, {
+          width: previewContent.offsetWidth,
+          height: previewContent.scrollHeight,
+          style: {
+            'transform': 'none',
+            'max-height': 'none',
+            'overflow': 'visible'
+          },
+          filter: (node) => {
+            return !(node instanceof Element) || !node.classList.contains('ignore-screenshot')
+          }
+        })
+        
+        // 移除临时容器
+        document.body.removeChild(newTempContainer)
+        
+        // 下载图片
+        const link = document.createElement('a')
+        link.href = dataUrl
+        link.download = `wechat-article-${new Date().toISOString().slice(0, 10)}.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        return true
+      }
+    } catch (error) {
+      console.error('保存图片失败:', error)
+      toast({
+        variant: "destructive",
+        title: "保存失败",
+        description: `无法生成图片: ${error instanceof Error ? error.message : '未知错误'}`,
+        duration: 3000
+      })
+      return false
+    }
+  }, [previewRef, toast])
+
   return (
     <div className="relative flex flex-col h-screen">
       {/* 工具栏 */}
@@ -307,6 +508,7 @@ export default function WechatEditor() {
             textarea.setSelectionRange(newCursorPos, newCursorPos)
           })
         }}
+        onSaveAsImage={handleSaveAsImage}
       />
 
       {/* 编辑器主体 */}

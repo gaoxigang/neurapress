@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Image as ImageIcon } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Image, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { QiniuConfigDialog, checkQiniuConfig } from '../QiniuConfigDialog'
@@ -16,6 +16,7 @@ export function ImageUploader({ onImageUploaded }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [showConfigDialog, setShowConfigDialog] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -59,7 +60,7 @@ export function ImageUploader({ onImageUploaded }: ImageUploaderProps) {
       const imageUrl = await uploadToQiniu(file, config)
       
       // 验证图片URL是否可访问
-      const img = new Image()
+      const img = new window.Image()
       img.onload = () => {
         onImageUploaded(imageUrl)
         toast({
@@ -80,6 +81,10 @@ export function ImageUploader({ onImageUploaded }: ImageUploaderProps) {
       })
     } finally {
       setIsUploading(false)
+      // 重置文件输入框，以便可以再次选择同一文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -91,22 +96,34 @@ export function ImageUploader({ onImageUploaded }: ImageUploaderProps) {
     setShowConfigDialog(false)
   }
 
+  const handleButtonClick = () => {
+    // 检查七牛云配置
+    const qiniuConfig = checkQiniuConfig()
+    if (!qiniuConfig) {
+      // 如果没有配置，打开配置对话框
+      setShowConfigDialog(true)
+    } else {
+      // 如果已有配置，触发文件选择
+      fileInputRef.current?.click()
+    }
+  }
+
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleUpload}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
       <Button
         variant="ghost"
-        size="sm"
-        className="h-8 w-8 p-0 relative"
+        className="h-9 w-9 p-0"
+        onClick={handleButtonClick}
         disabled={isUploading}
       >
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleUpload}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          disabled={isUploading}
-        />
-        <ImageIcon className="h-4 w-4" />
+        <Upload className="h-4 w-4" />
       </Button>
 
       <QiniuConfigDialog

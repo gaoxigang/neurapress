@@ -1,4 +1,6 @@
-import { useState, useCallback, useEffect } from 'react'
+'use client'
+
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { templates } from '@/config/wechat-templates'
 import { convertToWechat, getCodeThemeStyles, type RendererOptions } from '@/lib/markdown'
 import { type CodeThemeId } from '@/config/code-themes'
@@ -21,6 +23,7 @@ export const usePreviewContent = ({
   const { toast } = useToast()
   const [isConverting, setIsConverting] = useState(false)
   const [previewContent, setPreviewContent] = useState('')
+  const hasInteracted = useRef(false)
 
   const getPreviewContent = useCallback(() => {
     if (!value) return ''
@@ -129,11 +132,14 @@ export const usePreviewContent = ({
         // 等待 DOM 更新
         await new Promise(resolve => setTimeout(resolve, 50))
 
-        // 渲染 Mermaid 图表
-        try {
-          await initializeMermaid()
-        } catch (error) {
-          console.error('Failed to initialize Mermaid:', error)
+        // 只有在用户交互后才初始化 Mermaid
+        if (hasInteracted.current) {
+          // 渲染 Mermaid 图表
+          try {
+            await initializeMermaid()
+          } catch (error) {
+            console.error('Failed to initialize Mermaid:', error)
+          }
         }
       } catch (error) {
         console.error('Error updating preview:', error)
@@ -149,6 +155,25 @@ export const usePreviewContent = ({
 
     updatePreview()
   }, [value, selectedTemplate, styleOptions, codeTheme, getPreviewContent, toast])
+
+  // 监听用户交互
+  useEffect(() => {
+    const handleInteraction = () => {
+      hasInteracted.current = true
+    }
+
+    // 添加事件监听器
+    window.addEventListener('click', handleInteraction)
+    window.addEventListener('keydown', handleInteraction)
+    window.addEventListener('scroll', handleInteraction)
+
+    return () => {
+      // 移除事件监听器
+      window.removeEventListener('click', handleInteraction)
+      window.removeEventListener('keydown', handleInteraction)
+      window.removeEventListener('scroll', handleInteraction)
+    }
+  }, [])
 
   return {
     isConverting,

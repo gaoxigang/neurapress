@@ -2,6 +2,8 @@ import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Logo } from '@/components/icons/Logo'
 import { Loader2 } from 'lucide-react'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ErrorFallback } from '@/components/ErrorFallback'
 
 const LoadingLogo = () => (
   <div className="h-full bg-background flex items-center justify-center">
@@ -23,20 +25,18 @@ const LoadingLogo = () => (
 // Dynamically import WechatEditor with no SSR
 const WechatEditor = dynamic(() => import('@/components/editor/WechatEditor'), {
   ssr: false,
-  loading: () => (
-    <LoadingLogo />
-  ),
+  loading: () => <LoadingLogo />
 })
 
 export default function WechatPage() {
   return (
     <main className="h-full bg-background flex flex-col">
       <div className="flex-1 relative">
-        <Suspense fallback={
-          <LoadingLogo />
-        }>
-          <WechatEditor />
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorFallback />}>
+          <Suspense fallback={<LoadingLogo />}>
+            <WechatEditor />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </main>
   )

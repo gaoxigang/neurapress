@@ -31,19 +31,54 @@ export function cssPropertiesToString(style: StyleOptions = {}): string {
 export function baseStylesToString(base: RendererOptions['base'] = {}): string {
   if (!base) return ''
 
+  const {
+    themeColor,
+    fontFamily,
+    textAlign,
+    lineHeight,
+    padding,
+    margin,
+    wordBreak,
+    whiteSpace,
+    fontSize,
+    color,
+    background
+  } = base;
+
   const styles: string[] = []
 
-  if (base.lineHeight) {
-    styles.push(`line-height: ${base.lineHeight}`)
+  if (lineHeight) {
+    styles.push(`line-height: ${lineHeight}`)
   }
-  if (base.fontSize) {
-    styles.push(`font-size: ${base.fontSize}`)
+  if (fontSize) {
+    styles.push(`font-size: ${fontSize}`)
   }
-  if (base.textAlign) {
-    styles.push(`text-align: ${base.textAlign}`)
+  if (textAlign) {
+    styles.push(`text-align: ${textAlign}`)
   }
-  if (base.themeColor) {
-    styles.push(`--theme-color: ${base.themeColor}`)
+  if (themeColor) {
+    styles.push(`--theme-color: ${themeColor}`)
+  }
+  if (color) {
+    styles.push(`color: ${color} !important`)
+  }
+  if (background) {
+    styles.push(`background: ${background}`)
+  }
+  if (padding) {
+    styles.push(`padding: ${padding}`)
+  }
+  if (fontFamily) {
+    styles.push(`font-family: ${fontFamily}`)
+  }
+  if (margin) {
+    styles.push(`margin: ${margin}`)
+  }
+  if (wordBreak) {
+    styles.push(`word-break: ${wordBreak}`)
+  }
+  if (whiteSpace) {
+    styles.push(`white-space: ${whiteSpace}`)
   }
 
   return styles.join(';')

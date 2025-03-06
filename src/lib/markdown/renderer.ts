@@ -1,6 +1,6 @@
 import { marked } from 'marked'
 import type { Tokens, TokenizerAndRendererExtension } from 'marked'
-import type { RendererOptions } from './types'
+import type { RendererOptions, StyleOptions } from './types'
 import { cssPropertiesToString } from './styles'
 import { highlightCode } from './code-highlight'
 import katex from 'katex'
@@ -154,27 +154,34 @@ export class MarkdownRenderer {
 
     // 重写 heading 方法
     this.renderer.heading = ({ text, depth }: Tokens.Heading) => {
-      const headingKey = `h${depth}` as keyof RendererOptions['block']
-      const headingStyle = (this.options.block?.[headingKey] || {})
-      const style = {
-        ...headingStyle,
-        color: this.options.base?.themeColor
+      const { block, base } = this.options
+      const headingKey = `h${depth}` as keyof typeof block
+      const headingStyle = (block?.[headingKey] || {}) as StyleOptions
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !headingStyle.color) {
+        headingStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(headingStyle)
       const tokens = marked.Lexer.lexInline(text)
       const content = marked.Parser.parseInline(tokens, { renderer: this.renderer })
-      return `<h${depth}${styleStr ? ` style="${styleStr}"` : ''}>${content}</h${depth}>`
+      return `<h${depth} style="${style}">${content}</h${depth}>`
     }
 
     // 重写 paragraph 方法
     this.renderer.paragraph = ({ text, tokens }: Tokens.Paragraph) => {
-      const paragraphStyle = (this.options.block?.p || {})
-      const style = {
-        ...paragraphStyle,
-        fontSize: this.options.base?.fontSize,
-        lineHeight: this.options.base?.lineHeight
+      const { block, base } = this.options
+      const pStyle = block?.p || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !pStyle.color) {
+        pStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(pStyle)
 
       // 处理段落中的内联标记
       let content = text
@@ -191,26 +198,30 @@ export class MarkdownRenderer {
         content = marked.Parser.parseInline(inlineTokens, { renderer: this.renderer })
       }
 
-      return `<p${styleStr ? ` style="${styleStr}"` : ''}>${content}</p>`
+      return `<p style="${style}">${content}</p>`
     }
 
     // 重写 blockquote 方法
     this.renderer.blockquote = ({ text }: Tokens.Blockquote) => {
-      const blockquoteStyle = (this.options.block?.blockquote || {})
-      const style = {
-        ...blockquoteStyle,
-        borderLeft: `4px solid ${this.options.base?.themeColor || '#1a1a1a'}`
+      const { block, base } = this.options
+      const blockquoteStyle = block?.blockquote || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !blockquoteStyle.color) {
+        blockquoteStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(blockquoteStyle)
       const tokens = marked.Lexer.lexInline(text)
       const content = marked.Parser.parseInline(tokens, { renderer: this.renderer })
       
-      return `<blockquote${styleStr ? ` style="${styleStr}"` : ''}>${content}</blockquote>`
+      return `<blockquote style="${style}">${content}</blockquote>`
     }
 
     // 重写 code 方法
     this.renderer.code = ({ text, lang }: Tokens.Code) => {  
-      const codeStyle = (this.options.block?.code_pre || {})
+      const codeStyle = (this.options.block?.code_pre || {}) as StyleOptions
       const style = {
         ...codeStyle
       }
@@ -223,50 +234,72 @@ export class MarkdownRenderer {
 
     // 重写 codespan 方法
     this.renderer.codespan = ({ text }: Tokens.Codespan) => {  
-      const codespanStyle = (this.options.inline?.codespan || {})
+      const codespanStyle = (this.options.inline?.codespan || {}) as StyleOptions
       const styleStr = cssPropertiesToString(codespanStyle)
       return `<code${styleStr ? ` style="${styleStr}"` : ''}>${text}</code>`
     }
 
     // 重写 em 方法
     this.renderer.em = ({ text }: Tokens.Em) => {
-      const emStyle = (this.options.inline?.em || {})
-      const style = {
-        ...emStyle,
-        fontStyle: 'italic'
+      const { inline, base } = this.options
+      const emStyle = inline?.em || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !emStyle.color) {
+        emStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(emStyle)
       const tokens = marked.Lexer.lexInline(text)
       const content = marked.Parser.parseInline(tokens, { renderer: this.renderer })
       
-      return `<em${styleStr ? ` style="${styleStr}"` : ''}>${content}</em>`
+      return `<em style="${style}">${content}</em>`
     }
 
     // 重写 strong 方法
     this.renderer.strong = ({ text }: Tokens.Strong) => {
-      const strongStyle = (this.options.inline?.strong || {})
-      const style = {
-        ...strongStyle,
-        color: this.options.base?.themeColor,
-        fontWeight: 'bold'
+      const { inline, base } = this.options
+      const strongStyle = inline?.strong || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !strongStyle.color) {
+        strongStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      // 确保保留粗体设置
+      if (!strongStyle.fontWeight) {
+        strongStyle.fontWeight = 'bold'
+      }
+      
+      const style = cssPropertiesToString(strongStyle)
       const tokens = marked.Lexer.lexInline(text)
       const content = marked.Parser.parseInline(tokens, { renderer: this.renderer })
       
-      return `<strong${styleStr ? ` style="${styleStr}"` : ''}>${content}</strong>`
+      return `<strong style="${style}">${content}</strong>`
     }
 
     // 重写 link 方法
     this.renderer.link = ({ href, title, text }: Tokens.Link) => {
-      const linkStyle = (this.options.inline?.link || {})
-      const styleStr = cssPropertiesToString(linkStyle)
-      return `<a href="${href}"${title ? ` title="${title}"` : ''}${styleStr ? ` style="${styleStr}"` : ''}>${text}</a>`
+      const { inline, base } = this.options
+      const linkStyle = inline?.link || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !linkStyle.color) {
+        linkStyle.color = globalColor
+      }
+      
+      const style = cssPropertiesToString(linkStyle)
+      const titleAttr = title ? ` title="${title}"` : ''
+      
+      return `<a href="${href}"${titleAttr} style="${style}">${text}</a>`
     }
 
     // 重写 image 方法
     this.renderer.image = ({ href, title, text }: Tokens.Image) => {
-      const imageStyle = (this.options.block?.image || {})
+      const imageStyle = (this.options.block?.image || {}) as StyleOptions
       const style = {
         ...imageStyle
       }
@@ -276,15 +309,17 @@ export class MarkdownRenderer {
 
     // 重写 list 方法
     this.renderer.list = (token: Tokens.List) => {
+      const { block, base } = this.options
       const tag = token.ordered ? 'ol' : 'ul'
-      const listStyle = (this.options.block?.[tag] || {})
-      const style = {
-        ...listStyle,
-        listStyle: token.ordered ? 'decimal' : 'disc',
-        paddingLeft: '2em',
-        marginBottom: '16px'
+      const listStyle = (block?.[tag as keyof typeof block] || {}) as StyleOptions
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !listStyle.color) {
+        listStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(listStyle)
       const startAttr = token.ordered && token.start !== 1 ? ` start="${token.start}"` : ''
       
       const items = token.items.map(item => {
@@ -296,46 +331,50 @@ export class MarkdownRenderer {
         return this.renderer.listitem({ ...item, text: itemText })
       }).join('')
       
-      return `<${tag}${startAttr}${styleStr ? ` style="${styleStr}"` : ''}>${items}</${tag}>`
+      return `<${tag}${startAttr}${style ? ` style="${style}"` : ''}>${items}</${tag}>`
     }
 
     // 重写 listitem 方法
     this.renderer.listitem = (item: Tokens.ListItem) => {
-      const listitemStyle = (this.options.inline?.listitem || {})
-      const style = {
-        ...listitemStyle,
-        marginBottom: '8px',
-        display: 'list-item'
+      const { inline, base } = this.options
+      // listitem在inline中而不是block中
+      const liStyle = (inline?.listitem || {}) as StyleOptions
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !liStyle.color) {
+        liStyle.color = globalColor
       }
-      const styleStr = cssPropertiesToString(style)
+      
+      const style = cssPropertiesToString(liStyle)
       
       // 处理嵌套列表
-      let content = item.text
-      if (item.tokens) {
-        content = item.tokens.map(token => {
-          if (token.type === 'list') {
-            // 递归处理嵌套列表
-            return this.renderer.list(token as Tokens.List)
-          } else {
-            // 处理其他类型的 token
-            const tokens = marked.Lexer.lexInline(token.raw)
-            return marked.Parser.parseInline(tokens, { renderer: this.renderer })
-          }
-        }).join('')
-      } else {
-        // 如果没有 tokens，则按普通文本处理
-        const tokens = marked.Lexer.lexInline(content)
-        content = marked.Parser.parseInline(tokens, { renderer: this.renderer })
+      let content = ''
+      if (item.task) {
+        const checked = item.checked ? 'checked' : ''
+        content += `<input type="checkbox" ${checked} disabled> `
       }
       
-      return `<li${styleStr ? ` style="${styleStr}"` : ''}>${content}</li>`
+      if (item.tokens) {
+        content += marked.Parser.parseInline(item.tokens, { renderer: this.renderer })
+      }
+      
+      return `<li style="${style}">${content}</li>`
     }
 
     // 添加删除线支持
     this.renderer.del = ({ text }: Tokens.Del) => {
-      const delStyle = (this.options.inline?.del || {})
-      const styleStr = cssPropertiesToString(delStyle)
-      return `<del${styleStr ? ` style="${styleStr}"` : ''}>${text}</del>`
+      const { inline, base } = this.options
+      const delStyle = inline?.del || {}
+      const globalColor = base?.color
+      
+      // 如果没有特定颜色设置，则使用全局颜色
+      if (globalColor && !delStyle.color) {
+        delStyle.color = globalColor
+      }
+      
+      const style = cssPropertiesToString(delStyle)
+      return `<del style="${style}">${text}</del>`
     }
   }
 

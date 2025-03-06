@@ -424,5 +424,98 @@ export const templates: Template[] = [
         ${html}
       </section>`;
     }
+  },
+  {
+    id: 'simple-global',
+    name: '全局颜色模板',
+    description: '支持全局文字颜色覆盖的简约模板',
+    styles: 'prose-simple',
+    options: {
+      base: {
+        themeColor: '#333333',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+        textAlign: 'left',
+        lineHeight: '1.75',
+        padding: '1.2rem',
+        margin: '0 auto',
+        wordBreak: 'break-word',
+        whiteSpace: 'pre-wrap',
+        fontSize: '16px',
+        color: '#333333'
+      },
+      block: {
+        h1: {
+          fontSize: '24px',
+          fontWeight: 'bold',
+          margin: '1.5em 0 1em',
+          padding: '0.5em 0',
+          textAlign: 'center',
+        },
+        h2: {
+          fontSize: '20px',
+          fontWeight: 'bold',
+          margin: '1.5em 0 1em',
+          padding: '0.3em 0',
+          textAlign: 'left',
+        },
+        h3: {
+          fontSize: '18px',
+          fontWeight: 'bold',
+          margin: '1.2em 0 0.8em',
+          paddingLeft: '0.8em',
+        },
+        p: {
+          margin: '1.2em 0',
+          lineHeight: '1.8',
+          fontSize: '16px',
+          textAlign: 'justify',
+          letterSpacing: '0.05em',
+        },
+        blockquote: {
+          margin: '1.2em 0',
+          padding: '1em 1.2em',
+          borderLeft: '4px solid rgba(0, 0, 0, 0.1)',
+          background: 'rgba(0, 0, 0, 0.05)',
+          borderRadius: '0 4px 4px 0',
+        },
+        ul: {
+          margin: '1em 0',
+          paddingLeft: '1.5em',
+          listStyle: 'disc',
+        },
+        ol: {
+          margin: '1em 0',
+          paddingLeft: '1.5em',
+          listStyle: 'decimal',
+        },
+        code_pre: {
+          fontSize: '14px',
+          padding: '1em',
+          borderRadius: '5px',
+          background: 'rgba(0, 0, 0, 0.05)',
+        }
+      },
+      inline: {
+        strong: {
+          fontWeight: 'bold',
+        },
+        em: {
+          fontStyle: 'italic',
+        },
+        link: {
+          textDecoration: 'underline',
+        },
+        codespan: {
+          fontFamily: 'monospace',
+          padding: '2px 4px',
+          background: 'rgba(0, 0, 0, 0.05)',
+          borderRadius: '3px',
+        },
+        del: {
+          textDecoration: 'line-through',
+        }
+      }
+    },
+    transform: (html: string) => html
   }
 ];

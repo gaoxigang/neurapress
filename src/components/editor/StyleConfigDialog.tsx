@@ -24,6 +24,27 @@ const themeColors = [
   { name: '石墨', value: '#374151' },
 ]
 
+// 预设背景颜色
+const backgroundColors = [
+  { name: '清除背景', value: 'transparent' },
+  { name: '默认白色', value: '#ffffff' },
+  { name: '温暖米色', value: '#f5f5dc' },
+  { name: '淡雅灰', value: '#f8f9fa' },
+  { name: '薄荷绿', value: '#f0fff4' }
+]
+
+// 预设渐变色
+const gradientColors = [
+  { name: '日落渐变', value: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)' },
+  { name: '清新渐变', value: 'linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)' },
+  { name: '紫罗兰渐变', value: 'linear-gradient(to right, #c471f5 0%, #fa71cd 100%)' },
+  { name: '深海渐变', value: 'linear-gradient(120deg, #0093E9 0%, #80D0C7 100%)' },
+  { name: '晨雾渐变', value: 'linear-gradient(to top, #fff1eb 0%, #ace0f9 100%)' },
+  { name: '极光渐变', value: 'linear-gradient(to right, #43e97b 0%, #38f9d7 100%)' },
+  { name: '霞光渐变', value: 'linear-gradient(to right, #fa709a 0%, #fee140 100%)' },
+  { name: '星空渐变', value: 'linear-gradient(to top, #30cfd0 0%, #330867 100%)' }
+]
+
 interface StyleConfigDialogProps {
   value: RendererOptions
   onChangeAction: (options: RendererOptions) => void
@@ -103,7 +124,7 @@ export function StyleConfigDialog({ value, onChangeAction }: StyleConfigDialogPr
           <DialogTitle>样式配置</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -150,6 +171,137 @@ export function StyleConfigDialog({ value, onChangeAction }: StyleConfigDialogPr
               </p>
             </div>
 
+            {/* 全局字体颜色选择 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>全局字体颜色</Label>
+                {customizedFields.has('base.color') && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => resetToDefault('base.color')}
+                  >
+                    重置
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-6 gap-2 mb-2">
+                {[
+                  { name: '黑色', value: '#000000' },
+                  { name: '深灰', value: '#333333' },
+                  { name: '中灰', value: '#666666' },
+                  { name: '浅灰', value: '#999999' },
+                  { name: '深蓝', value: '#0f172a' },
+                  { name: '深棕', value: '#422006' }
+                ].map((color) => (
+                  <button
+                    key={color.value}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${
+                      currentOptions.base?.color === color.value
+                        ? 'border-primary scale-110'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    onClick={() => handleOptionChange('base', 'color', color.value)}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  value={currentOptions.base?.color || '#000000'}
+                  className="w-16 h-8 p-1"
+                  onChange={(e) => handleOptionChange('base', 'color', e.target.value)}
+                />
+                <Input
+                  value={currentOptions.base?.color || '#000000'}
+                  onChange={(e) => handleOptionChange('base', 'color', e.target.value)}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                此颜色将应用于所有正文文本，但不会覆盖特定设置的文字颜色
+              </p>
+            </div>
+
+            {/* 背景颜色选择 */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>背景颜色</Label>
+                {customizedFields.has('base.background') && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => resetToDefault('base.background')}
+                  >
+                    重置
+                  </Button>
+                )}
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm mb-2">纯色</p>
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    {backgroundColors.map((color) => (
+                      <button
+                        key={color.value}
+                        className={`h-8 w-full rounded-md border ${
+                          currentOptions.base?.background === color.value
+                            ? 'ring-2 ring-primary'
+                            : 'hover:scale-105'
+                        } transition-all`}
+                        style={{ background: color.value }}
+                        onClick={() => handleOptionChange('base', 'background', color.value)}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      type="color"
+                      value={currentOptions.base?.background?.startsWith('#') ? currentOptions.base?.background : '#ffffff'}
+                      className="w-16 h-8 p-1"
+                      onChange={(e) => handleOptionChange('base', 'background', e.target.value)}
+                    />
+                    <Input
+                      value={currentOptions.base?.background?.startsWith('#') ? currentOptions.base?.background : ''}
+                      placeholder="输入颜色代码，如 #ff0000"
+                      onChange={(e) => handleOptionChange('base', 'background', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm mb-2">渐变色</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {gradientColors.map((gradient) => (
+                      <button
+                        key={gradient.value}
+                        className={`h-12 w-full rounded-md border ${
+                          currentOptions.base?.background === gradient.value
+                            ? 'ring-2 ring-primary'
+                            : 'hover:scale-105'
+                        } transition-all`}
+                        style={{ background: gradient.value }}
+                        onClick={() => handleOptionChange('base', 'background', gradient.value)}
+                        title={gradient.name}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <Input
+                      value={currentOptions.base?.background?.startsWith('linear-gradient') ? currentOptions.base?.background : ''}
+                      placeholder="输入渐变代码，如 linear-gradient(to right, #ff0000, #0000ff)"
+                      onChange={(e) => handleOptionChange('base', 'background', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                此颜色将应用于整个文档背景
+              </p>
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>字体大小</Label>
@@ -171,6 +323,32 @@ export function StyleConfigDialog({ value, onChangeAction }: StyleConfigDialogPr
                   value={parseInt(currentOptions.base?.fontSize || '15')}
                   className="w-24"
                   onChange={(e) => handleOptionChange('base', 'fontSize', `${e.target.value}px`)}
+                />
+                <span className="flex items-center">px</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>内边距</Label>
+                {customizedFields.has('base.padding') && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => resetToDefault('base.padding')}
+                  >
+                    重置
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={parseInt(currentOptions.base?.padding?.replace('px', '') || '20')}
+                  className="w-24"
+                  onChange={(e) => handleOptionChange('base', 'padding', `${e.target.value}px`)}
                 />
                 <span className="flex items-center">px</span>
               </div>

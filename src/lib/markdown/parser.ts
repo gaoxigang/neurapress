@@ -160,5 +160,7 @@ export class MarkdownParser {
       .replace(/(?<!<[^>]*)\*\*([^*]+)\*\*(?![^<]*>)/g, '<strong>$1</strong>')
       // 处理无序列表的 - 标记，但排除代码块内的部分
       .replace(/^(?!\s*```)([ \t]*)-\s+/gm, '$1• ')
+      // 处理自定义颜色语法 {color:#rrggbb}text{/color}，使用!important确保覆盖全局颜色
+      .replace(/\{color:(#[0-9a-fA-F]{3,8})\}([\s\S]*?)\{\/color\}/g, '<span style="color: $1 !important">$2</span>')
   }
 } 

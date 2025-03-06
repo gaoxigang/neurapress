@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Plus, Save, Smartphone, Settings, Github, Trash2, Upload } from 'lucide-react'
+import { Copy, Plus, Save, Smartphone, Settings, Github, Trash2, Upload, Download } from 'lucide-react'
 import { ImageUploader } from './ImageUploader'
 import { cn } from '@/lib/utils'
 import { WechatStylePicker } from '../../template/WechatStylePicker'
@@ -41,6 +41,7 @@ interface EditorToolbarProps {
   onCodeThemeChange: (theme: CodeThemeId) => void
   onClear: () => void
   onImageUploaded?: (imageUrl: string) => void
+  onSaveAsImage: () => Promise<boolean>
 }
 
 export function EditorToolbar({
@@ -62,7 +63,8 @@ export function EditorToolbar({
   onCodeThemeChange,
   wordCount,
   readingTime,
-  onClear
+  onClear,
+  onSaveAsImage
 }: EditorToolbarProps) {
   const { toast } = useToast()
 
@@ -120,6 +122,33 @@ export function EditorToolbar({
     }
   }
 
+  const handleSaveAsImage = async () => {
+    try {
+      const result = await onSaveAsImage()
+      if (result) {
+        toast({
+          title: "保存成功",
+          description: "已将内容保存为图片",
+          duration: 2000
+        })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "保存失败",
+          description: "无法保存图片，请重试",
+          action: <ToastAction altText="重试">重试</ToastAction>,
+        })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "保存失败",
+        description: "发生错误，请重试",
+        action: <ToastAction altText="重试">重试</ToastAction>,
+      })
+    }
+  }
+
   return (
     <div className="flex-none border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-20">
       <div className="px-4">
@@ -128,7 +157,7 @@ export function EditorToolbar({
             <div className="flex items-center gap-4">
               <Link href="/" className="text-xl font-bold text-primary hidden sm:flex items-center gap-2">
                 <Logo className="w-6 h-6" />
-                NeuraPress
+                MarkDown 助手
               </Link>
               <div className="hidden sm:block">
                 <ArticleList 
@@ -195,11 +224,18 @@ export function EditorToolbar({
                 <span>清除</span>
               </button>
               <button
-                onClick={handleCopyPreview}
+                onClick={handleCopy}
                 className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm transition-colors"
               >
                 <Copy className="h-4 w-4" />
                 <span>复制</span>
+              </button>
+              <button
+                onClick={handleSaveAsImage}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span>保存图片</span>
               </button>
               <div className="hidden sm:flex items-center gap-1">
                 <ThemeToggle />

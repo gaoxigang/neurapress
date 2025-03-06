@@ -90,6 +90,7 @@ export interface RendererOptions {
     wordBreak?: string
     whiteSpace?: string
     color?: string
+    background?: string
   }
   block?: {
     h1?: StyleOptions
